@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.3.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+bootJar {
+    baseName = 'ethereum.eventloader'
+    version =  '1.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	def excludeDeps = { 
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12' 
+        exclude group: 'log4j', module: 'log4j'
+    }
+
+	compile 'org.springframework.boot:spring-boot-starter'
+	compile 'org.springframework:spring-jms'
+	compile 'org.web3j:core:3.4.0'    
+    compile 'org.apache.zookeeper:zookeeper:3.4.12', excludeDeps
+    compile 'org.apache.activemq:activemq-client:5.15.4'
+    
+    testImplementation 'junit:junit:4.+'
+    testImplementation 'org.springframework:spring-test'
+    testImplementation 'org.springframework.boot:spring-boot-test'
+}
