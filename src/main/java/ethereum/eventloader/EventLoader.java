@@ -1,5 +1,7 @@
 package ethereum.eventloader;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -7,12 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
 /**
  * Loads Ethereum events into EMS topic
- * 
  * TODO: possibility to reload specific blocks range
- * TODO: move ethereum calls out of the lock
  */
 @Component
 public class EventLoader {
@@ -88,17 +89,41 @@ public class EventLoader {
 		}
 	}
 
+	/**
+	 * @return true if at latest block
+	 */
+	@SuppressWarnings("rawtypes")
 	boolean eventLoadAttempt() {
+		//operations without lock
+		int latestBlock = blockchain.latestBlockNumber();
+		int lastProcessed = coordinator.lastProcessedBlock();
+		Events events;
+		if (latestBlock > lastProcessed) {
+			events = blockchain.eventsLog(lastProcessed, latestBlock);
+		} else if (lastProcessed > latestBlock) {
+			log.warn("Lag detected. Node is on block {} while latest processed is {}", latestBlock, lastProcessed);
+			return true;
+		} else {
+			log.info("At latest block: {}", latestBlock);
+			return true;
+		}
+		
 		DistributedLock lock = coordinator.obtainLock();
 		boolean atLatestBlock = true;
 		try {
-			int latestBlock = blockchain.latestBlockNumber();
-			int lastProcessed = coordinator.lastProcessedBlock();
+			lastProcessed = coordinator.lastProcessedBlock(); //reload under lock
 			
 			if (latestBlock > lastProcessed) {
-				Events events = blockchain.eventsLog(lastProcessed, latestBlock);
-				messageBroker.publish(events);
-				coordinator.saveState(events);
+				List<LogResult> logs = events.getLogs(lastProcessed);
+				if (logs.isEmpty()) {
+					log.info("All events published in parallel");
+				} else {
+					messageBroker.publish(logs);
+				}
+				
+				if (events.getEndBlock() > lastProcessed)
+					coordinator.saveState(events.getEndBlock());
+				
 				if (latestBlock > events.getEndBlock()) {
 					//we process limited number of blocks at once
 					log.info("Blocks to process: {}", latestBlock - events.getEndBlock());
@@ -114,4 +139,21 @@ public class EventLoader {
 		}
 		return atLatestBlock;
 	}
+
+	public void setBlockchain(BlockchainAdapter blockchain) {
+		this.blockchain = blockchain;
+	}
+
+	public void setCoordinator(CoordinatorAdapter coordinator) {
+		this.coordinator = coordinator;
+	}
+
+	public void setMessageBroker(MessageBrokerAdapter messageBroker) {
+		this.messageBroker = messageBroker;
+	}
+
+	public void setSleepIntervalMs(long sleepIntervalMs) {
+		this.sleepIntervalMs = sleepIntervalMs;
+	}
+	
 }

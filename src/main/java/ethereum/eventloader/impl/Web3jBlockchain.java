@@ -82,6 +82,8 @@ public class Web3jBlockchain implements BlockchainAdapter {
 		Events events = new Events(startBlock, endBlock);
 		log.info("Querying logs in blocks range [{}..{}]", startBlock, endBlock);
 		
+		int cnt = 0;
+		
 		for (int block = startBlock; block <= endBlock; block++) {
 			try {
 				log.info("Querying logs in block: {}", block);
@@ -95,13 +97,14 @@ public class Web3jBlockchain implements BlockchainAdapter {
 				} else {
 					log.error("No events found in block: {}", block);
 				}
-				events.getLogs().addAll(ethLog.getLogs());
+				cnt += ethLog.getLogs().size();
+				events.addLogs(block, ethLog.getLogs());
 			} catch (IOException e) {
 				throw new BlockchainException(e);
 			}
 		}
 		
-		log.info("Total events found: {}", events.getLogs().size());
+		log.info("Total events found: {}", cnt);
 		return events;
 	}
 

@@ -27,7 +27,7 @@ public class ActiveMQTest extends Assert {
 	public void test_publish_events() throws Exception {
 		int latest = blockchain.latestBlockNumber();
 		Events events = blockchain.eventsLog(latest-10, latest-9);
-		jms.publish(events);
+		jms.publish(events.getLogs(0));
 	}
 	
 	@Test
@@ -35,17 +35,17 @@ public class ActiveMQTest extends Assert {
 		Events events = blockchain.eventsLog(5897110, 5897120);
 		
 		//warmup
-		jms.publish(events);
+		jms.publish(events.getLogs(0));
 		
 		long start = System.currentTimeMillis();
 		int cnt = 0;
 		while (cnt < 10) {
-			jms.publish(events);
+			jms.publish(events.getLogs(0));
 			cnt++;
 		}
 		long took = System.currentTimeMillis() - start;
 		long avg = took/cnt;
 		log.info("Published {} events X {} times in total {} ms (avg: {} ms))",
-				events.getLogs().size(), cnt, took, avg);
+				events.getLogs(0).size(), cnt, took, avg);
 	}
 }

@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 import ethereum.eventloader.CoordinatorAdapter;
 import ethereum.eventloader.CoordinatorException;
 import ethereum.eventloader.DistributedLock;
-import ethereum.eventloader.Events;
 
 @Component
 public class ZookeeperCoordinator implements CoordinatorAdapter {
@@ -116,11 +115,11 @@ public class ZookeeperCoordinator implements CoordinatorAdapter {
 	}
 	
 	@Override
-	public void saveState(Events events) {
+	public void saveState(int endBlock) {
 		try {
-			byte[] data = toBytes(events.getEndBlock());
+			byte[] data = toBytes(endBlock);
 			zk.setData(ZNODE_PROCESSED_BLOCK, data, -1);
-			log.info("Updated last processed block to: {}", events.getEndBlock());
+			log.info("Updated last processed block to: {}", endBlock);
 		} catch (KeeperException | InterruptedException e) {
 			throw new CoordinatorException(e);
 		}

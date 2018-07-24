@@ -1,5 +1,7 @@
 package ethereum.eventloader.impl;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.jms.Connection;
@@ -19,7 +21,6 @@ import org.springframework.util.StringUtils;
 import org.web3j.protocol.core.methods.response.EthLog.LogObject;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
-import ethereum.eventloader.Events;
 import ethereum.eventloader.MessageBrokerAdapter;
 import ethereum.eventloader.MessageBrokerException;
 
@@ -51,17 +52,17 @@ public class ActiveMQ implements MessageBrokerAdapter {
 	
 	@Override 
 	@SuppressWarnings("rawtypes")
-	public void publish(Events events) {
+	public void publish(List<LogResult> logs) {
 		if (!enabled)
 			return;
 		
-		if (events.getLogs().isEmpty())
+		if (logs.isEmpty())
 			return;
 		
 		try {
 			long start = System.currentTimeMillis();
-			log.info("Sending {} events to {}", events.getLogs().size(), allTopic);
-			for (LogResult res: events.getLogs()) {
+			log.info("Sending {} events to {}", logs.size(), allTopic);
+			for (LogResult res: logs) {
 				LogObject evt = (LogObject) res;
 				TextMessage msg = session.createTextMessage();
 				msg.setStringProperty("address", evt.getAddress());
@@ -81,7 +82,7 @@ public class ActiveMQ implements MessageBrokerAdapter {
 			}
 			session.commit();
 			long tookMs = System.currentTimeMillis() - start;
-			log.info("Published {} messages in {} ms", events.getLogs().size(), tookMs);
+			log.info("Published {} messages in {} ms", logs.size(), tookMs);
 		} catch (Exception e) {
 			try {
 				session.rollback();

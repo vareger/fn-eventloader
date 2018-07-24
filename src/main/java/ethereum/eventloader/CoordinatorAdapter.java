@@ -6,7 +6,7 @@ public interface CoordinatorAdapter {
 
 	DistributedLock obtainLock();
 
-	void saveState(Events events);
+	void saveState(int endBlock);
 
 	void reconnect();
 

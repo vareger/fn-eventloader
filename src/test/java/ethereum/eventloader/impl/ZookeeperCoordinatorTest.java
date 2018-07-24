@@ -9,8 +9,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import ethereum.eventloader.DistributedLock;
-import ethereum.eventloader.Events;
-import ethereum.eventloader.impl.ZookeeperCoordinator;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ImplTC.class)
@@ -22,7 +20,7 @@ public class ZookeeperCoordinatorTest extends Assert {
 	@Test
 	public void test_processed_block_state() throws Exception {
 		int block = coordinator.lastProcessedBlock();
-		coordinator.saveState(new Events(block+1, block+5));
+		coordinator.saveState(block+5);
 		assertEquals(block+5, coordinator.lastProcessedBlock());
 	}
 	
