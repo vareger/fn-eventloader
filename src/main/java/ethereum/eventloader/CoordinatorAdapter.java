@@ -8,4 +8,6 @@ public interface CoordinatorAdapter {
 
 	void saveState(Events events);
 
+	void reconnect();
+
 }

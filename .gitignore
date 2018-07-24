@@ -13,4 +13,7 @@ maven-eclipse.xml
 .gradle/
 build/
 tmp/
+bin/
+target/
+logs/
 .externalToolBuilders/

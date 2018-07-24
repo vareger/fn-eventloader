@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.web3j.protocol.core.methods.response.EthLog.LogObject;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
@@ -24,8 +25,6 @@ import ethereum.eventloader.MessageBrokerException;
 
 /**
  * Publishes events to ActiveMQ topic
- * 
- * TODO: use spring connection wrappers for automatic reconnects
  */
 @Component
 public class ActiveMQ implements MessageBrokerAdapter {
@@ -41,9 +40,21 @@ public class ActiveMQ implements MessageBrokerAdapter {
 	@Value("${eventloader.jms.url}") 
 	private String url;
 	
+	@Value("${eventloader.jms.user:#{null}}") 
+	private String user;
+	
+	@Value("${eventloader.jms.password:#{null}}") 
+	private String password;
+	
+	@Value("${eventloader.jms.enabled:true}")
+	private boolean enabled;
+	
 	@Override 
 	@SuppressWarnings("rawtypes")
 	public void publish(Events events) {
+		if (!enabled)
+			return;
+		
 		if (events.getLogs().isEmpty())
 			return;
 		
@@ -83,8 +94,17 @@ public class ActiveMQ implements MessageBrokerAdapter {
 
 	@PostConstruct
 	public void start() {
+		if (!enabled) {
+			log.info("JMS publisher disabled");
+			return;
+		}
+		
 		log.info("Connecting to JMS at: {}", url);
 		ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+		if (!StringUtils.isEmpty(user)) {
+			connectionFactory.setUserName(user);
+			connectionFactory.setPassword(password);
+		}
 		try {
 			connection = connectionFactory.createConnection();
 			connection.start();
@@ -107,6 +127,9 @@ public class ActiveMQ implements MessageBrokerAdapter {
 	
 	@PreDestroy
 	public void stop() {
+		if (!enabled)
+			return;
+		
 		try {
 			session.close();
 		} catch (JMSException jmse) {
@@ -118,5 +141,20 @@ public class ActiveMQ implements MessageBrokerAdapter {
 		} catch (JMSException jmse) {
 			log.error("Failed to close JMS connection");
 		}
+	}
+	
+	@Override
+	public void reconnect() {
+		try {
+			log.info("Stopping...");
+			stop();
+			log.info("Stopped");
+		} catch (Exception e) {
+			log.info("Stop failed");
+		}
+		
+		log.info("Starting...");
+		start();
+		log.info("Started");
 	}
 }

@@ -6,4 +6,6 @@ public interface BlockchainAdapter {
 
 	Events eventsLog(int latestProcessed, int latestBlock);
 
+	void reconnect();
+
 }

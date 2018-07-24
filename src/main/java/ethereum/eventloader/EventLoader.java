@@ -11,10 +11,8 @@ import org.springframework.stereotype.Component;
 /**
  * Loads Ethereum events into EMS topic
  * 
- * TODO: fast mode for initial catchup
  * TODO: possibility to reload specific blocks range
  * TODO: move ethereum calls out of the lock
- * TODO: test for EventLoader with mocked eth/ems/zk
  */
 @Component
 public class EventLoader {
@@ -43,12 +41,50 @@ public class EventLoader {
 
 	void start0() throws Exception {
 		log.info("Starting event load loop...");
+		boolean connected = true;
 		while (true) {
-			boolean atLatestBlock = eventLoadAttempt();
+			if (!connected) {
+				sleep(sleepIntervalMs);
+				connected = reconnect();
+				if (!connected)
+					continue;
+			}
+			
+			boolean atLatestBlock = false;
+			try {
+				atLatestBlock = eventLoadAttempt();
+			} catch (Exception e) {
+				log.error("Event load failed, will reconnect and retry", e);
+				sleep(sleepIntervalMs);
+				connected = reconnect();
+			}
+			
 			try {
 				if (atLatestBlock)
 					Thread.sleep(sleepIntervalMs);
 			} catch (InterruptedException e) {}
+		}
+	}
+
+	private static void sleep(long interval) {
+		try {
+			Thread.sleep(interval);
+		} catch (InterruptedException ex) {}
+	}
+
+	private boolean reconnect() {
+		try {
+			log.info("Reconnecting coordinator...");
+			coordinator.reconnect();
+			log.info("Reconnecting blockchain...");
+			blockchain.reconnect();
+			log.info("Reconnecting message broker...");
+			messageBroker.reconnect();
+			log.info("Reconnected!");
+			return true;
+		} catch (Exception re) {
+			log.info("Reconnect failed", re);
+			return false;
 		}
 	}
 
@@ -73,8 +109,6 @@ public class EventLoader {
 			} else { //latestProcessed == latestBlock
 				log.info("At latest block: {}", latestBlock);
 			}
-		} catch (Exception e) {
-			log.error("Event load attempt failed, will continue trying", e);
 		} finally {
 			lock.release();
 		}

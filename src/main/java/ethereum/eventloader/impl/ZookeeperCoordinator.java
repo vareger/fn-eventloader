@@ -42,7 +42,10 @@ public class ZookeeperCoordinator implements CoordinatorAdapter {
 	private String zkUrl;
 	
 	@Value("${eventloader.zk.session_timeout_ms:3000}") 
-	private int zkSessionTimeout;
+	private int zkSessionTimeoutMs;
+	
+	@Value("${eventloader.zk.connect_timeout_ms:5000}") 
+	private int zkConnectTimeoutMs;
 	
 	@Value("${eventloader.start_block:5883269}") 
 	private int startBlock;
@@ -128,7 +131,7 @@ public class ZookeeperCoordinator implements CoordinatorAdapter {
 		try {
 			log.info("Connecting to Zookeeper at: {}", zkUrl);
 			CountDownLatch latch = new CountDownLatch(1);  
-			zk = new ZooKeeper(zkUrl, zkSessionTimeout, new Watcher() {
+			zk = new ZooKeeper(zkUrl, zkSessionTimeoutMs, new Watcher() {
 				@Override
 				public void process(WatchedEvent event) {
 					log.info("ZK event: " + event);
@@ -138,10 +141,16 @@ public class ZookeeperCoordinator implements CoordinatorAdapter {
 				}
 			});
 			log.info("Waiting for Zookeeper...");
-			latch.await();
+			latch.await(zkConnectTimeoutMs, TimeUnit.MILLISECONDS);
 			
 			if (zk.exists(ZNODE_PROCESSED_BLOCK, false) == null) {
 				initNodes();
+			} else {
+				int lastProcessedBlock = lastProcessedBlock();
+				if (startBlock > lastProcessedBlock) {
+					zk.setData(ZNODE_PROCESSED_BLOCK, toBytes(startBlock), -1);
+					log.info("Rolled last processed block to: {}", startBlock);
+				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Initialization failed", e);
@@ -153,6 +162,21 @@ public class ZookeeperCoordinator implements CoordinatorAdapter {
 		try {
 			zk.close();
 		} catch (InterruptedException e) {}
+	}
+	
+	@Override
+	public void reconnect() {
+		try {
+			log.info("Stopping...");
+			stop();
+			log.info("Stopped");
+		} catch (Exception e) {
+			log.info("Stop failed");
+		}
+		
+		log.info("Starting...");
+		start();
+		log.info("Started");
 	}
 	
 	void initNodes() {
