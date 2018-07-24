@@ -13,7 +13,6 @@ import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
 /**
  * Loads Ethereum events into EMS topic
- * TODO: possibility to reload specific blocks range
  */
 @Component
 public class EventLoader {

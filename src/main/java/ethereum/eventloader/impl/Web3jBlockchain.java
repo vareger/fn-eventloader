@@ -79,6 +79,10 @@ public class Web3jBlockchain implements BlockchainAdapter {
 			endBlock = startBlock + blockBatchSize - 1;
 		}
 		
+		return eventsLog0(startBlock, endBlock);
+	}
+
+	public Events eventsLog0(int startBlock, int endBlock) {
 		Events events = new Events(startBlock, endBlock);
 		log.info("Querying logs in blocks range [{}..{}]", startBlock, endBlock);
 		
