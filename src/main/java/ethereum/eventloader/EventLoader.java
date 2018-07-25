@@ -100,7 +100,9 @@ public class EventLoader {
 		if (latestBlock > lastProcessed) {
 			events = blockchain.eventsLog(lastProcessed, latestBlock);
 		} else if (lastProcessed > latestBlock) {
-			log.warn("Lag detected. Node is on block {} while latest processed is {}", latestBlock, lastProcessed);
+			int gap = lastProcessed - latestBlock;
+			log.warn("Lag detected. Node is on block {} while latest processed is {}. Gap: {}", latestBlock, lastProcessed, gap);
+			waitForNodeToCatchup(gap);
 			return true;
 		} else {
 			log.info("At latest block: {}", latestBlock);
@@ -129,7 +131,9 @@ public class EventLoader {
 					atLatestBlock = false;
 				}
 			} else if (lastProcessed > latestBlock) {
-				log.warn("Lag detected. Node is on block {} while latest processed is {}", latestBlock, lastProcessed);
+				int gap = lastProcessed - latestBlock;
+				log.warn("Lag detected. Node is on block {} while latest processed is {}. Gap: {}", latestBlock, lastProcessed, gap);
+				waitForNodeToCatchup(gap);
 			} else { //latestProcessed == latestBlock
 				log.info("At latest block: {}", latestBlock);
 			}
@@ -137,6 +141,16 @@ public class EventLoader {
 			lock.release();
 		}
 		return atLatestBlock;
+	}
+
+	private static void waitForNodeToCatchup(int gap) {
+		if (gap > 1000) {
+			log.info("Sleeping for 60 sec...");
+			sleep(60000); //node is syncing so lets give it some time to catchup
+		} else if (gap > 100) {
+			log.info("Sleeping for 30 sec...");
+			sleep(30000);
+		}
 	}
 
 	public void setBlockchain(BlockchainAdapter blockchain) {
