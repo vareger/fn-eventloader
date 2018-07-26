@@ -1,12 +1,20 @@
 package ethereum.eventloader;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventLoaderTest {
-
+	Logger log = LoggerFactory.getLogger("TEST");
+	
+	@Test
+	public void test_disk_usage() throws Exception {
+		log.info("Disk usage: {}%", EventLoader.diskUsagePct("c:\\"));
+	}
+	
 //	@Test
 //	public void test_normal_load() throws Exception {
 //		EventLoader loader = new EventLoader();

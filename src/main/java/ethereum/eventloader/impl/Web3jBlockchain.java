@@ -145,4 +145,13 @@ public class Web3jBlockchain implements BlockchainAdapter {
 		start();
 		log.info("Started");
 	}
+
+	@Override
+	public EthSyncing syncing() {
+		try {
+			return w3.ethSyncing().send();
+		} catch (IOException e) {
+			throw new BlockchainException(e);
+		}
+	}
 }
