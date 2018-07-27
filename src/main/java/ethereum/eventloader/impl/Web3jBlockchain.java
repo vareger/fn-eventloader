@@ -17,6 +17,7 @@ import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSyncing;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.protocol.ipc.UnixIpcService;
 
 import ethereum.eventloader.BlockchainAdapter;
 import ethereum.eventloader.BlockchainException;
@@ -30,6 +31,12 @@ public class Web3jBlockchain implements BlockchainAdapter {
 	
 	@Value("${eventloader.eth.node_url}") 
 	private String nodeUrl;
+	
+	@Value("${eventloader.eth.use_unix_ipc:false}") 
+	private boolean useUnixIpc;
+	
+	@Value("${eventloader.eth.ipc_socket_path:#{null}}") 
+	private String ipcSocketPath;
 	
 	/** We may not want to operate on latest block because 
 	 * it can be displaced from the main chain by uncle. */
@@ -99,7 +106,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
 				if (ethLog.getLogs().size() > 0) {
 					log.info("Found {} events", ethLog.getLogs().size());
 				} else {
-					log.error("No events found in block: {}", block);
+					log.warn("No events found in block: {}", block);
 				}
 				cnt += ethLog.getLogs().size();
 				events.addLogs(block, ethLog.getLogs());
@@ -122,7 +129,13 @@ public class Web3jBlockchain implements BlockchainAdapter {
 	
 	@PostConstruct
 	public void start() {
-		w3 = Web3j.build(new HttpService(nodeUrl));
+		if (useUnixIpc) {
+			log.info("Connecting via Unix/IPC...");
+			w3 = Web3j.build(new UnixIpcService(ipcSocketPath));
+		} else {
+			log.info("Connecting via HTTP...");
+			w3 = Web3j.build(new HttpService(nodeUrl));
+		}
 		log.info("Connected to: {}", nodeInfo());
 	}
 	

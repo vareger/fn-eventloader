@@ -4,17 +4,22 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1.} - %msg%n" />
         </Console>
-        <File name="LogFile" fileName="/home/ubuntu/logs/eventloader/eventloader.log" immediateFlush="true" append="true">
-            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
-        </File>
-        <SMTP name="smtpError" subject="Eventloader: ERROR" 
+        <RollingFile name="LogFile" fileName="/home/ubuntu/logs/eventloader.log" filePattern="/home/ubuntu/logs/eventloader-%d{yyyyMMdd}-%i.log">
+			<PatternLayout pattern="%d{yyyyMMdd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="100 MB" />
+				<OnStartupTriggeringPolicy />
+			</Policies>
+		</RollingFile>
+        <SMTP name="smtpError" subject="aws Eventloader: ERROR" 
     	 	  to="okundirenko@vareger.com" from="info@vareger.com"
           	  smtpHost="email-smtp.us-east-1.amazonaws.com" smtpPort="25" 
           	  smtpUsername="AKIAIQY4YIV6POVGEJGA" smtpPassword="AhDTvxK9nq4fN5n49PJM6ohFrxfo6bK4kwe4N1VSBAuC" 
           	  smtpDebug="true" bufferSize="50">
           	  <BurstFilter level="INFO" rate="1" maxBurst="10"/>
     	</SMTP>
-    	<SMTP name="smtpInfo" subject="Eventloader: REPORT" 
+    	<SMTP name="smtpInfo" subject="aws Eventloader: REPORT" 
     	 	  to="okundirenko@vareger.com" from="info@vareger.com"
           	  smtpHost="email-smtp.us-east-1.amazonaws.com" smtpPort="25" 
           	  smtpUsername="AKIAIQY4YIV6POVGEJGA" smtpPassword="AhDTvxK9nq4fN5n49PJM6ohFrxfo6bK4kwe4N1VSBAuC" 
