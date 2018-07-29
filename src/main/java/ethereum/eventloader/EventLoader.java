@@ -233,7 +233,7 @@ public class EventLoader {
 					atLatestBlock = false;
 				}
 				
-				int queueSize = latestBlock - lastProcessed;
+				int queueSize = latestBlock - Math.max(lastProcessed, events.getEndBlock());
 				stats.queueSize = queueSize > 0 ? queueSize : 0;
 			} else if (lastProcessed > latestBlock) {
 				int lag = lastProcessed - latestBlock;
@@ -280,7 +280,6 @@ public class EventLoader {
 		this.sleepIntervalMs = sleepIntervalMs;
 	}
 	
-	@SuppressWarnings("unused")
 	private static class Stats {
 		int eventsPublished;
 		int blocksProcessed;
