@@ -32,7 +32,7 @@
     </Appenders>
     <Loggers>
 		<Logger name="ethereum.eventloader" level="info" />
-		<Logger name="INFO_EMAIL" level="info" additivity="false">
+		<Logger name="ethereum.eventloader.INFO_EMAIL" level="info" additivity="false">
       		<AppenderRef ref="smtpInfo"/>
     	</Logger>
         <Root level="info">
