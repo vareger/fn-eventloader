@@ -11,7 +11,8 @@
 	<properties>
         <java.version>1.8</java.version>
         <spring.version>5.0.7.RELEASE</spring.version>
-        <spring.boot.version>2.0.3.RELEASE</spring.boot.version>
+        <spring.boot.version>2.0.4.RELEASE</spring.boot.version>
+		<spring.kafka.version>2.1.10.RELEASE</spring.kafka.version>
         <log4j2.version>2.11.0</log4j2.version>
         <slf4j.version>1.7.25</slf4j.version>
 		<maven.build.timestamp.format>yyyyMMdd_HHmm</maven.build.timestamp.format>
@@ -88,7 +89,7 @@
 		<dependency>
 		    <groupId>org.web3j</groupId>
 		    <artifactId>core</artifactId>
-		    <version>3.4.0</version>
+		    <version>3.6.0</version>
 		</dependency>
 		
 		<dependency>
@@ -117,7 +118,13 @@
 					<artifactId>log4j</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>	
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+			<version>${spring.kafka.version}</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
