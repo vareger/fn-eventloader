@@ -27,7 +27,6 @@ import ethereum.eventloader.MessageBrokerException;
 /**
  * Publishes events to ActiveMQ topic
  */
-@Component
 public class ActiveMQ implements MessageBrokerAdapter {
 	private static final Logger log = LoggerFactory.getLogger(ActiveMQ.class);
 	
