@@ -65,7 +65,7 @@ public class EventLoader {
 		boolean connected = true;
 		long lastReportTimeMs = System.currentTimeMillis();
 		stats = new Stats();
-		emailReport(); //fail fast is something wrong with reporting
+//		emailReport(); //fail fast is something wrong with reporting
 		while (true) {
 			if (!connected) {
 				sleep(sleepIntervalMs);
