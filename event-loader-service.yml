@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventloader
+  labels:
+    app: eventloader-service
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: eventloader-service
+  template:
+    metadata:
+      labels:
+        app: eventloader-service
+    spec:
+      containers:
+      - name: eventloader-service
+        image: localhost:5000/eventloader:latest
+      imagePullSecrets:
+      - name: regcred
