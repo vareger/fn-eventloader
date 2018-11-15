@@ -1,22 +1,17 @@
 eventloader:
   eth:
     node_url: https://rinkeby.infura.io/KoT2OtS1XERWOC0QQAPX
-    block_batch_size: 5
+    block_batch_size: 10
   zk:
     url: zookeeper.kafka:2181
-  start_block: 3252383
+  start_block: 3343093
 
 spring:
   kafka:
-    bootstrap-servers: bootstrap.kafka.svc.cluster.local:9092
+    bootstrap-servers: bootstrap.kafka:9092
     producer:
       value-serializer: 'org.springframework.kafka.support.serializer.JsonSerializer'
-      batch-size: 4096
-      acks: 'all'
       retries: 5
-      properties:
-        request.timeout.ms: 1000
-        linger.ms: 1000
     consumer:
       value-deserializer: 'org.springframework.kafka.support.serializer.JsonDeserializer'
       group-id: 'ethereum-events-consumer'

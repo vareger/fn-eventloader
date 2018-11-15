@@ -19,29 +19,29 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfig {
 
-//    @Value(value = "${kafka.bootstrapAddress}")
-//    private String bootstrapAddress;
-//
-//    @Bean
-//    public ConsumerFactory<String, EventMessage> consumerFactory() {
-//        Map<String, Object> props = new HashMap<>();
-//        props.put(
-//                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-//                bootstrapAddress);
-//        props.put(
-//                ConsumerConfig.GROUP_ID_CONFIG,
-//                "ethereum.events");
-//        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(EventMessage.class));
-//    }
-//
-//    @Bean
-//    public ConcurrentKafkaListenerContainerFactory<String, EventMessage>
-//    kafkaListenerContainerFactory() {
-//
-//        ConcurrentKafkaListenerContainerFactory<String, EventMessage> factory
-//                = new ConcurrentKafkaListenerContainerFactory<>();
-//        factory.setConsumerFactory(consumerFactory());
-//        return factory;
-//    }
+    @Value(value = "${kafka.bootstrapAddress}")
+    private String bootstrapAddress;
+
+    @Bean
+    public ConsumerFactory<String, EventMessage> consumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(
+                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                bootstrapAddress);
+        props.put(
+                ConsumerConfig.GROUP_ID_CONFIG,
+                "ethereum.events");
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(EventMessage.class, false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, EventMessage>
+    kafkaListenerContainerFactory() {
+
+        ConcurrentKafkaListenerContainerFactory<String, EventMessage> factory
+                = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
 
 }

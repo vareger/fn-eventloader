@@ -5,7 +5,7 @@ metadata:
   labels:
     app: eventloader-service
 spec:
-  replicas: 5
+  replicas: 2
   selector:
     matchLabels:
       app: eventloader-service
@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: eventloader-service
-        image: localhost:5000/eventloader:latest
+        image: vareger/event-loader:latest
       imagePullSecrets:
       - name: regcred

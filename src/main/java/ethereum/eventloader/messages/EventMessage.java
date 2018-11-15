@@ -12,16 +12,18 @@ public class EventMessage {
     private String contractAddress;
     private BigInteger blockNumber;
     private String data;
+    private BigInteger index;
 
     public EventMessage() {
     }
 
-    public EventMessage(List<String> topics, String transactionHash, String contractAddress, BigInteger blockNumber, String data) {
+    public EventMessage(List<String> topics, String transactionHash, String contractAddress, BigInteger blockNumber, String data, BigInteger index) {
         this.topics = topics;
         this.transactionHash = transactionHash;
         this.contractAddress = contractAddress;
         this.blockNumber = blockNumber;
         this.data = data;
+        this.index = index;
     }
 
     public EventMessage(EthLog.LogObject logObject) {
@@ -30,7 +32,8 @@ public class EventMessage {
                 logObject.getTransactionHash(),
                 logObject.getAddress(),
                 logObject.getBlockNumber(),
-                logObject.getData()
+                logObject.getData(),
+                logObject.getLogIndex()
         );
     }
 
@@ -74,4 +77,11 @@ public class EventMessage {
         this.blockNumber = blockNumber;
     }
 
+    public BigInteger getIndex() {
+        return index;
+    }
+
+    public void setIndex(BigInteger index) {
+        this.index = index;
+    }
 }
