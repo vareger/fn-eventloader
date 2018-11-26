@@ -8,7 +8,7 @@ eventloader:
 
 spring:
   kafka:
-    bootstrap-servers: bootstrap.kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_URL}
     producer:
       value-serializer: 'org.springframework.kafka.support.serializer.JsonSerializer'
       retries: 5
