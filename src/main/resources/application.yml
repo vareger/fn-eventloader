@@ -1,10 +1,10 @@
 eventloader:
   eth:
-    node_url: https://rinkeby.infura.io/KoT2OtS1XERWOC0QQAPX
-    block_batch_size: 10
+    node_url: ${NODE_URL}
+    block_batch_size: ${BLOCK_BATCH_SIZE}
   zk:
-    url: zookeeper.kafka:2181
-  start_block: 3343093
+    url: ${ZOOKEEPER_URl}
+  start_block: ${START_BLOCK}
 
 spring:
   kafka:
