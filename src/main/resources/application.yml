@@ -3,7 +3,7 @@ eventloader:
     node_url: ${NODE_URL}
     block_batch_size: ${BLOCK_BATCH_SIZE}
   zk:
-    url: ${ZOOKEEPER_URl}
+    url: ${ZOOKEEPER_URL}
   start_block: ${START_BLOCK}
 
 spring:
@@ -14,7 +14,7 @@ spring:
       retries: 5
     consumer:
       value-deserializer: 'org.springframework.kafka.support.serializer.JsonDeserializer'
-      group-id: 'ethereum-events-consumer'
+      group-id: ${GROUP_ID}
     template:
-      default-topic: 'ethereum.events.all'
-    client-id: 'ethereum-events'
+      default-topic: ${EVENT_TOPIC}
+    client-id: ${CLIENT_ID}
