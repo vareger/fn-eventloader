@@ -1,21 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-loader-config-rinkeby
+data:
+  NODE_URL: https://rinkeby.infura.io/KoT2OtS1XERWOC0QQAPX
+  START_BLOCK: '3413316'
+  ZOOKEEPER_URL: zookeeper.kafka:2181
+  KAFKA_BOOTSTRAP_URL: bootstrap.kafka:9092
+  BLOCK_BATCH_SIZE: '10'
+  GROUP_ID: 'ethereum-events-consumer-rinkeby'
+  CLIENT_ID: 'ethereum-events-rinkeby'
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: eventloader
+  name: eventloader-rinkeby
   labels:
-    app: eventloader-service
+    app: eventloader-service-rinkeby
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: eventloader-service
+      app: eventloader-service-rinkeby
   template:
     metadata:
       labels:
-        app: eventloader-service
+        app: eventloader-service-rinkeby
     spec:
       containers:
       - name: eventloader-service
         image: vareger/event-loader:latest
+        envFrom:
+          - configMapRef:
+              name: event-loader-config-rinkeby
       imagePullSecrets:
       - name: regcred

@@ -1,11 +1,3 @@
-eventloader:
-  eth:
-    node_url: ${NODE_URL}
-    block_batch_size: ${BLOCK_BATCH_SIZE}
-  zk:
-    url: ${ZOOKEEPER_URL}
-  start_block: ${START_BLOCK}
-
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_URL}
@@ -15,6 +7,21 @@ spring:
     consumer:
       value-deserializer: 'org.springframework.kafka.support.serializer.JsonDeserializer'
       group-id: ${GROUP_ID}
-    template:
-      default-topic: ${EVENT_TOPIC}
     client-id: ${CLIENT_ID}
+event-loader:
+  topics:
+    all: 'ethereum.events.all'
+    events:
+      - event: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        topic: 'ethereum.events.erc20.transfer'
+        name: 'Transfer'
+ethereum:
+  client-address: ${NODE_URL}
+  batch-size: ${BLOCK_BATCH_SIZE}
+  start-block: ${START_BLOCK}
+  block-lag:
+zookeeper:
+  namespace: ${ZOOKEEPER_NAMESPACE}
+  connect-string: ${ZOOKEEPER_URL}
+  connection-timeout: 3000
+  session-timeout: 10000
