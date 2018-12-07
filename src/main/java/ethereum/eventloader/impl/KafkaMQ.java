@@ -1,6 +1,7 @@
 package ethereum.eventloader.impl;
 
 import ethereum.eventloader.MessageBrokerAdapter;
+import ethereum.eventloader.config.KafkaTopics;
 import ethereum.eventloader.messages.EventMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +19,15 @@ import java.util.List;
 public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult<String, EventMessage>>, FailureCallback {
     private static final Logger log = LoggerFactory.getLogger(KafkaMQ.class);
 
-    private static final String ERC20_TRANSFER_EVENT_TOPIC = "ethereum.events.erc20.transfer";
-    private static final String ERC20_TRANSFER_EVENT = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    private final KafkaTemplate<String, EventMessage> kafkaTemplate;
+
+    private final KafkaTopics topics;
 
     @Autowired
-    private KafkaTemplate<String, EventMessage> kafkaTemplate;
+    public KafkaMQ(KafkaTemplate<String, EventMessage> kafkaTemplate, KafkaTopics topics) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.topics = topics;
+    }
 
     @Override
     public void publish(List<EthLog.LogResult> logs) {
@@ -34,6 +39,7 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
         logs.stream()
                 .map(logResult -> (EthLog.LogObject) logResult)
                 .map(EventMessage::new)
+                .filter(logMessage -> !logMessage.getTopics().isEmpty())
                 .peek(logMessage -> log.info("Sending event topic {}", logMessage.getTopics().get(0)))
                 .forEach(this::sendEvent);
 
@@ -42,10 +48,15 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
     }
 
     private void sendEvent(EventMessage eventMessage) {
-        this.kafkaTemplate.sendDefault(eventMessage.getTopics().get(0), eventMessage).addCallback(this, this);
-        if (eventMessage.getTopics().get(0).equalsIgnoreCase(ERC20_TRANSFER_EVENT)) {
-            this.kafkaTemplate.send(ERC20_TRANSFER_EVENT_TOPIC, eventMessage.getContractAddress(), eventMessage).addCallback(this, this);
-        }
+        this.kafkaTemplate.send(topics.getAll(), eventMessage.getTopics().get(0), eventMessage).addCallback(this, this);
+        topics.getEvents()
+                .stream()
+                .filter(eventTopicMap -> eventTopicMap.equalsEvent(eventMessage))
+                .findAny()
+                .ifPresent(eventTopicMap ->
+                        this.kafkaTemplate.send(eventTopicMap.getTopic(), eventMessage.getContractAddress(), eventMessage)
+                                .addCallback(this, this)
+                );
     }
 
     @Override

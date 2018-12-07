@@ -14,34 +14,34 @@ import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 public class Events {
 	private static final Logger log = LoggerFactory.getLogger(Events.class);
 	
-	private final int startBlock;
-	private final int endBlock;
-	private final Map<Integer, List<LogResult>> logs;
+	private final long startBlock;
+	private final long endBlock;
+	private final Map<Long, List<LogResult>> logs;
 	
-	public Events(int startBlock, int endBlock) {
+	public Events(long startBlock, long endBlock) {
 		this.startBlock = startBlock;
 		this.endBlock = endBlock;
 		this.logs = new LinkedHashMap<>();
 	}
 
-	public int getStartBlock() {
+    public long getStartBlock() {
 		return startBlock;
 	}
 
-	public int getEndBlock() {
+	public long getEndBlock() {
 		return endBlock;
 	}
 	
-	public void addLogs(int block, List<LogResult> list) {
+	public void addLogs(long block, List<LogResult> list) {
 		logs.put(block, list);
 	}
 	
-	public List<LogResult> getLogs(int afterBlock) {
+	public List<LogResult> getLogs(long afterBlock) {
 		int skipped = 0;
 		List<LogResult> all = new ArrayList<>();
-		for (Entry<Integer, List<LogResult>> e: logs.entrySet()) {
+		for (Entry<Long, List<LogResult>> e: logs.entrySet()) {
 			List<LogResult> events = e.getValue();
-			Integer block = e.getKey();
+			Long block = e.getKey();
 			if (block > afterBlock) {
 				all.addAll(events);
 			} else {

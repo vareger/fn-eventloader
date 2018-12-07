@@ -2,13 +2,13 @@ package ethereum.eventloader;
 
 import java.util.List;
 
+import ethereum.eventloader.impl.KafkaMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.support.ResourcePropertySource;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
-import ethereum.eventloader.impl.ActiveMQ;
 import ethereum.eventloader.impl.Web3jBlockchain;
 
 /**
@@ -36,7 +36,7 @@ public class ManualBlockLoader {
 		log.info("Started Spring context");
 		
 		Web3jBlockchain blockchain = ctx.getBean(Web3jBlockchain.class);
-		MessageBrokerAdapter messageBroker = ctx.getBean(ActiveMQ.class);
+		MessageBrokerAdapter messageBroker = ctx.getBean(KafkaMQ.class);
 		
 		log.info("Loading events from the blockchain...");
 		Events events = blockchain.eventsLog0(startBlock, endBlock);

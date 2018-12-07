@@ -4,12 +4,10 @@ import org.web3j.protocol.core.methods.response.EthSyncing;
 
 public interface BlockchainAdapter {
 
-	int latestBlockNumber();
+	long latestBlockNumber();
 
-	Events eventsLog(int latestProcessed, int latestBlock);
+	Events eventsLog(long latestProcessed, long latestBlock);
 
-	void reconnect();
-	
 	EthSyncing syncing();
 
 }
