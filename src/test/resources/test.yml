@@ -1,0 +1,27 @@
+spring:
+  kafka:
+    bootstrap-servers: 'localhost:9092'
+    producer:
+      value-serializer: 'org.springframework.kafka.support.serializer.JsonSerializer'
+      retries: 5
+    consumer:
+      value-deserializer: 'org.springframework.kafka.support.serializer.JsonDeserializer'
+      group-id: 'event-loader-test'
+    client-id: 'event-loader-test'
+event-loader:
+  topics:
+    all: 'test.ethereum.events.all'
+    events:
+    - event: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+      topic: 'test.ethereum.events.erc20.transfer'
+      name: 'Transfer'
+ethereum:
+  client-address: wss://rinkeby.infura.io/ws
+  batch-size: 10
+  start-block: 3486795
+  block-lag:
+zookeeper:
+  namespace: 'event-loader-test'
+  connect-string: 'localhost:2181'
+  connection-timeout: 3000
+  session-timeout: 10000
