@@ -17,6 +17,7 @@ import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 import org.web3j.protocol.core.methods.response.EthSyncing;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Date;
@@ -55,6 +56,9 @@ public class EventLoader {
     @Value("${eventloader.eth.log_folder:/home/ubuntu/logs}")
     private String logFolder;
 
+    @Value("#{web3jConfig.startBlock}")
+    private BigInteger startBlock;
+
     private Stats stats;
 
     @Autowired
@@ -65,7 +69,7 @@ public class EventLoader {
         stats = new Stats();
     }
 
-    @Scheduled
+    @Scheduled(fixedDelay = 100L)
     public void update() {
         boolean atLatestBlock = false;
         try {
@@ -83,7 +87,7 @@ public class EventLoader {
         } catch (InterruptedException ignored) { }
     }
 
-    @Scheduled(fixedDelayString = "#{${eventloader.report_email_interval_ms:3600000}}")
+    @Scheduled(fixedDelayString = "#{${eventloader.report_email_interval_ms:3600000}}", initialDelay = 3600000)
     public void sendEmail() {
         emailReport();
         stats = new Stats();
@@ -167,6 +171,10 @@ public class EventLoader {
             );
             long latestBlock = blockchain.latestBlockNumber();
             long lastProcessed = lastBlock.get().preValue();
+            if (startBlock.longValue() > lastProcessed) {
+                log.info("Last processed is least of start block, updated: {} ==> {}", lastProcessed, startBlock.toString());
+                lastProcessed = startBlock.longValue();
+            }
             Events events;
             if (latestBlock > lastProcessed) {
                 events = blockchain.eventsLog(lastProcessed, latestBlock);
