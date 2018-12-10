@@ -14,6 +14,7 @@ import org.web3j.protocol.ipc.UnixIpcService;
 import org.web3j.protocol.ipc.WindowsIpcService;
 import org.web3j.protocol.websocket.WebSocketService;
 
+import java.net.ConnectException;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -44,6 +45,11 @@ public class Web3jBeans {
             web3jService = new HttpService(clientAddress, createOkHttpClient(), false);
         } else if(clientAddress.startsWith("ws") || clientAddress.startsWith("wss")) {
             web3jService = new WebSocketService(clientAddress, false);
+            try {
+                ((WebSocketService) web3jService).connect();
+            } catch (ConnectException e) {
+                log.error("Cannot connect to web socket", e);
+            }
         } else if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             web3jService = new WindowsIpcService(clientAddress);
         } else {
