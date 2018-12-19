@@ -17,8 +17,8 @@ event-loader:
         name: 'Transfer'
 ethereum:
   client-address: ${NODE_URL}
-  batch-size: ${BLOCK_BATCH_SIZE}
-  start-block: ${START_BLOCK}
+  batch-size: ${BLOCK_BATCH_SIZE:10}
+  start-block: ${START_BLOCK:3540052}
   block-lag:
 zookeeper:
   namespace: ${ZOOKEEPER_NAMESPACE}
