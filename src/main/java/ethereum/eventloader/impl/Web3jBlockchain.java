@@ -3,6 +3,7 @@ package ethereum.eventloader.impl;
 import ethereum.eventloader.BlockchainAdapter;
 import ethereum.eventloader.BlockchainException;
 import ethereum.eventloader.Events;
+import ethereum.eventloader.beans.Web3jBeans;
 import ethereum.eventloader.config.Web3jConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,14 @@ import java.util.List;
 public class Web3jBlockchain implements BlockchainAdapter {
     private static final Logger log = LoggerFactory.getLogger(Web3jBlockchain.class);
 
-    private final Web3j w3;
+    private final Web3jBeans beans;
     private final Web3jConfig config;
+    private Web3j w3;
 
     @Autowired
-    public Web3jBlockchain(Web3j w3, Web3jConfig config) {
-        this.w3 = w3;
+    public Web3jBlockchain(Web3jBeans beans, Web3jConfig config) {
+        this.beans = beans;
+        this.w3 = beans.web3j();
         this.config = config;
     }
 
@@ -58,6 +61,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
             log.info("Latest block number: {}", latestBlock);
             return latestBlock;
         } catch (IOException e) {
+            this.w3 = beans.web3j();
             throw new BlockchainException(e);
         }
     }
@@ -96,6 +100,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
                 cnt += ethLog.getLogs().size();
                 events.addLogs(block, ethLog.getLogs());
             } catch (IOException e) {
+                this.w3 = beans.web3j();
                 throw new BlockchainException(e);
             }
         }
@@ -109,6 +114,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
         try {
             return w3.ethSyncing().send();
         } catch (IOException e) {
+            this.w3 = beans.web3j();
             throw new BlockchainException(e);
         }
     }

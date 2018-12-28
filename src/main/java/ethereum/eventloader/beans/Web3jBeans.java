@@ -29,7 +29,6 @@ public class Web3jBeans {
         this.config = config;
     }
 
-    @Bean
     public Web3j web3j() {
         log.info("Building service for endpoint: " + config.getClientAddress());
         Web3jService web3jService = buildService(config.getClientAddress());

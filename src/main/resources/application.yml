@@ -10,16 +10,16 @@ spring:
     client-id: ${CLIENT_ID}
 event-loader:
   topics:
-    all: 'ethereum.events.all'
+    all: ${TOPIC_ALL}
     events:
       - event: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-        topic: 'ethereum.events.erc20.transfer'
+        topic: ${TOPIC_TRANSFER}
         name: 'Transfer'
 ethereum:
   client-address: ${NODE_URL}
   batch-size: ${BLOCK_BATCH_SIZE:10}
   start-block: ${START_BLOCK:3540052}
-  block-lag:
+  block-lag: ${BLOCK_LAG:12}
 zookeeper:
   namespace: ${ZOOKEEPER_NAMESPACE}
   connect-string: ${ZOOKEEPER_URL}
