@@ -4,6 +4,7 @@ spring:
     producer:
       value-serializer: 'org.springframework.kafka.support.serializer.JsonSerializer'
       retries: 5
+      acks: 'all'
     consumer:
       value-deserializer: 'org.springframework.kafka.support.serializer.JsonDeserializer'
       group-id: ${GROUP_ID}
