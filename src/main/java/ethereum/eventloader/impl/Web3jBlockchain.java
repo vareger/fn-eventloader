@@ -5,6 +5,7 @@ import ethereum.eventloader.BlockchainException;
 import ethereum.eventloader.Events;
 import ethereum.eventloader.beans.Web3jBeans;
 import ethereum.eventloader.config.Web3jConfig;
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
 
             log.info("Latest block number: {}", latestBlock);
             return latestBlock;
-        } catch (IOException e) {
+        } catch (IOException | WebsocketNotConnectedException e) {
             this.w3 = beans.web3j();
             throw new BlockchainException(e);
         }
@@ -99,7 +100,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
                 }
                 cnt += ethLog.getLogs().size();
                 events.addLogs(block, ethLog.getLogs());
-            } catch (IOException e) {
+            } catch (IOException | WebsocketNotConnectedException e) {
                 this.w3 = beans.web3j();
                 throw new BlockchainException(e);
             }
@@ -113,7 +114,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
     public EthSyncing syncing() {
         try {
             return w3.ethSyncing().send();
-        } catch (IOException e) {
+        } catch (IOException | WebsocketNotConnectedException e) {
             this.w3 = beans.web3j();
             throw new BlockchainException(e);
         }
