@@ -5,6 +5,8 @@ import ethereum.eventloader.BlockchainException;
 import ethereum.eventloader.Events;
 import ethereum.eventloader.beans.Web3jBeans;
 import ethereum.eventloader.config.Web3jConfig;
+import io.reactivex.Flowable;
+import io.reactivex.parallel.ParallelFlowable;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.EthSyncing;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.LongStream;
 
 @Component
 public class Web3jBlockchain implements BlockchainAdapter {
@@ -77,6 +83,16 @@ public class Web3jBlockchain implements BlockchainAdapter {
         }
 
         return eventsLog0(startBlock, endBlock);
+    }
+
+    @Override
+    public ParallelFlowable<EthBlock.Block> loadBlocks(long startBlock, long endBlock) {
+        return ParallelFlowable.from(
+                Flowable.rangeLong(startBlock, endBlock - startBlock)
+                        .map(DefaultBlockParameterNumber::new)
+                        .map(block -> w3.ethGetBlockByNumber(block, false).send())
+                        .map(EthBlock::getBlock)
+        );
     }
 
     public Events eventsLog0(long startBlock, long endBlock) {

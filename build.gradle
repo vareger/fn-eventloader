@@ -48,20 +48,23 @@ dependencies {
     compile group: 'org.web3j', name: 'core', version: '4.0.1'
     compile(group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.13')
     compile group: 'org.apache.curator', name: 'curator-framework', version: '4.0.1'
-//    compile group: 'org.apache.curator', name: 'curator-client', version: '4.0.1'
     compile group: 'org.apache.curator', name: 'curator-recipes', version: '4.0.1'
     compile group: 'org.springframework.kafka', name: 'spring-kafka'
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-test', version: '2.0.4.RELEASE'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.4.RELEASE'
     testCompile group: 'org.springframework', name: 'spring-test', version: '5.0.7.RELEASE'
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testCompile group: 'org.apache.curator', name: 'curator-test', version: '4.0.1'
+    testCompile group: 'org.springframework.kafka', name: 'spring-kafka-test'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    compileOnly 'org.springframework.boot:spring-boot-configuration-processor'
 }
 
 docker {
     springBootApplication {
         baseImage = 'java:8-jre'
         ports = [8080]
-        tag = 'vareger/event-loader:dev'
+        tag = 'vareger/event-loader:1.0.6'
     }
     registryCredentials {
         /*

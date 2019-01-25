@@ -199,6 +199,7 @@ public class EventLoader {
             long blocks = events.getEndBlock() - lastProcessed;
             stats.blocksProcessed += blocks > 0 ? blocks : 0;
             List<LogResult> logs = events.getLogs(lastProcessed);
+            blockchain.loadBlocks(lastProcessed, events.getEndBlock()).sequential().subscribe(messageBroker::publishBlock).dispose();
             if (logs.isEmpty()) {
                 log.info("All events published in parallel");
             } else {
