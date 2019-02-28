@@ -39,17 +39,17 @@ repositories {
     maven { url "http://repo.maven.apache.org/maven2" }
 }
 dependencies {
-    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
-    compile group: 'javax.mail', name: 'javax.mail-api', version: '1.6.1'
-    compile group: 'com.sun.mail', name: 'javax.mail', version: '1.6.1'
-    compile group: 'com.lmax', name: 'disruptor', version: '3.3.7'
+    implementation group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    implementation group: 'javax.mail', name: 'javax.mail-api', version: '1.6.1'
+    implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.6.1'
+    implementation group: 'com.lmax', name: 'disruptor', version: '3.3.7'
 
-    compile(group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.0.RELEASE')
-    compile group: 'org.web3j', name: 'core', version: '4.0.1'
-    compile(group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.13')
-    compile group: 'org.apache.curator', name: 'curator-framework', version: '4.0.1'
-    compile group: 'org.apache.curator', name: 'curator-recipes', version: '4.0.1'
-    compile group: 'org.springframework.kafka', name: 'spring-kafka'
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.0.RELEASE')
+    implementation group: 'org.web3j', name: 'core', version: '4.0.1'
+    implementation(group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.13')
+    implementation group: 'org.apache.curator', name: 'curator-framework', version: '4.0.1'
+    implementation group: 'org.apache.curator', name: 'curator-recipes', version: '4.0.1'
+    implementation group: 'org.springframework.kafka', name: 'spring-kafka'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.4.RELEASE'
     testCompile group: 'org.springframework', name: 'spring-test', version: '5.0.7.RELEASE'
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -64,7 +64,7 @@ docker {
     springBootApplication {
         baseImage = 'java:8-jre'
         ports = [8080]
-        tag = 'vareger/event-loader:1.0.6'
+        tag = 'vareger/event-loader:1.0.7'
     }
     registryCredentials {
         /*

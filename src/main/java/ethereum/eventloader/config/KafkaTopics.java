@@ -83,6 +83,9 @@ public class KafkaTopics {
         }
 
         public boolean equalsEvent(EventMessage eventMessage) {
+            if (event.equals("*")) {
+                return true;
+            }
             if (!eventMessage.getTopics().isEmpty()) {
                 return event.equalsIgnoreCase(eventMessage.getTopics().get(0));
             }

@@ -22,9 +22,7 @@ import org.web3j.protocol.core.methods.response.EthSyncing;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.LongStream;
 
 @Component
 public class Web3jBlockchain implements BlockchainAdapter {
