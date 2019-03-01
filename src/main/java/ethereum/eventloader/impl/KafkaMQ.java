@@ -74,8 +74,7 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
         topics.getEvents()
                 .stream()
                 .filter(eventTopicMap -> eventTopicMap.equalsEvent(eventMessage))
-                .findAny()
-                .ifPresent(eventTopicMap ->
+                .forEach(eventTopicMap ->
                         this.kafkaTemplate.send(eventTopicMap.getTopic(), eventMessage.getTopics().get(0), eventMessage)
                                 .addCallback(this, this)
                 );
