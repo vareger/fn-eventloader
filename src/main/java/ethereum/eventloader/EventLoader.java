@@ -22,6 +22,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Loads Ethereum events into EMS topic
@@ -163,7 +164,7 @@ public class EventLoader {
     boolean eventLoadAttempt() {
         boolean atLatestBlock = true;
         InterProcessMutex mutex = new InterProcessMutex(curatorFramework, ZNODE_PROCESSED_BLOCK);
-        try (Locker ignored = new Locker(mutex)) {
+        try (Locker ignored = new Locker(mutex, 120, TimeUnit.SECONDS)) {
             DistributedAtomicLong lastBlock = new DistributedAtomicLong(
                     curatorFramework,
                     ZNODE_PROCESSED_BLOCK,
