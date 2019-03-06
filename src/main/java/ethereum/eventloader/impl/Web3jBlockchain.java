@@ -5,6 +5,7 @@ import ethereum.eventloader.BlockchainException;
 import ethereum.eventloader.Events;
 import ethereum.eventloader.beans.Web3jBeans;
 import ethereum.eventloader.config.Web3jConfig;
+import ethereum.eventloader.metrics.BlockchainMetrics;
 import io.reactivex.Flowable;
 import io.reactivex.parallel.ParallelFlowable;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -30,13 +31,15 @@ public class Web3jBlockchain implements BlockchainAdapter {
 
     private final Web3jBeans beans;
     private final Web3jConfig config;
+    private final BlockchainMetrics metrics;
     private Web3j w3;
 
     @Autowired
-    public Web3jBlockchain(Web3jBeans beans, Web3jConfig config) {
+    public Web3jBlockchain(Web3jBeans beans, Web3jConfig config, BlockchainMetrics metrics) {
         this.beans = beans;
         this.w3 = beans.web3j();
         this.config = config;
+        this.metrics = metrics;
     }
 
     @Override
@@ -64,6 +67,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
             }
 
             log.info("Latest block number: {}", latestBlock);
+            this.metrics.setBlockNumber(latestBlock);
             return latestBlock;
         } catch (IOException | WebsocketNotConnectedException e) {
             this.w3 = beans.web3j();
@@ -127,7 +131,9 @@ public class Web3jBlockchain implements BlockchainAdapter {
     @Override
     public EthSyncing syncing() {
         try {
-            return w3.ethSyncing().send();
+            EthSyncing syncing = w3.ethSyncing().send();
+            this.metrics.setSyncStatus(syncing.isSyncing());
+            return syncing;
         } catch (IOException | WebsocketNotConnectedException e) {
             this.w3 = beans.web3j();
             throw new BlockchainException(e);

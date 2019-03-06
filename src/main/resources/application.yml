@@ -29,3 +29,15 @@ zookeeper:
   connect-string: ${ZOOKEEPER_URL}
   connection-timeout: 3000
   session-timeout: 10000
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoint:
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"

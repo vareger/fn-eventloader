@@ -1,5 +1,7 @@
 package ethereum.eventloader;
 
+import ethereum.eventloader.metrics.EventMetrics;
+import io.micrometer.core.annotation.Timed;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.curator.framework.CuratorFramework;
@@ -39,6 +41,8 @@ public class EventLoader {
 
     private final CuratorFramework curatorFramework;
 
+    private final EventMetrics metrics;
+
     /**
      * Milliseconds to sleep between event-load attempts
      */
@@ -63,18 +67,20 @@ public class EventLoader {
     private Stats stats;
 
     @Autowired
-    public EventLoader(BlockchainAdapter blockchain, MessageBrokerAdapter messageBroker, CuratorFramework curatorFramework) {
+    public EventLoader(BlockchainAdapter blockchain, MessageBrokerAdapter messageBroker, CuratorFramework curatorFramework, EventMetrics metrics) {
         this.blockchain = blockchain;
         this.messageBroker = messageBroker;
         this.curatorFramework = curatorFramework;
+        this.metrics = metrics;
         stats = new Stats();
     }
 
+    @Timed(longTask = true, value = "loading_time")
     @Scheduled(fixedDelay = 100L)
     public void update() {
         boolean atLatestBlock = false;
         try {
-            atLatestBlock = eventLoadAttempt();
+            atLatestBlock = this.metrics.recordExecutionTime(this::eventLoadAttempt);
         } catch (Exception e) {
             stats.errors++;
             log.error("Event load failed, will reconnect and retry", e);
@@ -218,6 +224,9 @@ public class EventLoader {
                 atLatestBlock = false;
             }
 
+            this.metrics.setCurrentBlockNumber(events.getEndBlock());
+            this.metrics.addProcessedEventsCount(blocks > 0 ? blocks : 0);
+            this.metrics.setLatestBlockNumber(latestBlock);
             long queueSize = latestBlock - Math.max(lastProcessed, events.getEndBlock());
             stats.queueSize = queueSize > 0 ? queueSize : 0;
         } catch (Exception e) {
