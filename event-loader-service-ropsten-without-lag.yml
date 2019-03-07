@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: event-loader-ropsten
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-topics
+  namespace: event-loader-ropsten
+spec:
+  template:
+    spec:
+      containers:
+      - name: topic-create-all
+        image: solsson/kafka:2.0
+        command:
+        - ./bin/kafka-topics.sh
+        - --zookeeper
+        -   zookeeper.kafka:2181
+        - --create
+        - --if-not-exists
+        - --topic
+        -   ethereum.ropsten.events.all.unconfirmed
+        - --partitions
+        -   "4"
+        - --replication-factor
+        -   "4"
+      - name: topic-create-transfer
+        image: solsson/kafka:2.0
+        command:
+        - ./bin/kafka-topics.sh
+        - --zookeeper
+        - zookeeper.kafka:2181
+        - --create
+        - --if-not-exists
+        - --topic
+        - ethereum.ropsten.events.erc20.transfer.unconfirmed
+        - --partitions
+        - "4"
+        - --replication-factor
+        - "4"
+      - name: topic-create-blocks
+        image: solsson/kafka:2.0
+        command:
+        - ./bin/kafka-topics.sh
+        - --zookeeper
+        - zookeeper.kafka:2181
+        - --create
+        - --if-not-exists
+        - --topic
+        - ethereum.ropsten.blocks.unconfirmed
+        - --partitions
+        - "4"
+        - --replication-factor
+        - "4"
+      restartPolicy: Never
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-loader-config-im
+  namespace: event-loader-ropsten
+data:
+  NODE_URL: ws://geth-rpc-ropsten.default:8546
+  START_BLOCK: '4997178'
+  ZOOKEEPER_URL: zookeeper.kafka:2181
+  ZOOKEEPER_NAMESPACE: event-loader-ropsten-im
+  KAFKA_BOOTSTRAP_URL: bootstrap.kafka:9092
+  BLOCK_BATCH_SIZE: '10'
+  TOPIC_BLOCK: 'ethereum.ropsten.blocks.unconfirmed'
+  GROUP_ID: 'ethereum-events-consumer-ropsten-im'
+  CLIENT_ID: 'ethereum-events-ropsten-im'
+  TOPIC_ALL: 'ethereum.ropsten.events.all.unconfirmed'
+  TOPIC_TRANSFER: 'ethereum.ropsten.events.erc20.transfer.unconfirmed'
+  BLOCK_LAG: '0'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventloader-without-lag
+  namespace: event-loader-ropsten
+  labels:
+    app: eventloader-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: eventloader-service
+  template:
+    metadata:
+      labels:
+        app: eventloader-service
+    spec:
+      containers:
+      - name: eventloader-service
+        image: vareger/event-loader:1.0.8
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: event-loader-config-im
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: actuator
+      imagePullSecrets:
+      - name: regcred
+
