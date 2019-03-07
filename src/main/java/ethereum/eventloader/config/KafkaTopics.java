@@ -12,7 +12,6 @@ import java.util.Set;
 public class KafkaTopics {
 
     private String all;
-    private String blocks;
     private Set<EventTopicMap> events;
 
     public String getAll() {
@@ -32,11 +31,8 @@ public class KafkaTopics {
     }
 
     public String getBlocks() {
-        return blocks;
-    }
-
-    public void setBlocks(String blocks) {
-        this.blocks = blocks;
+        return getEvents().stream().filter(event -> event.getEvent().equals("block"))
+                .findAny().map(EventTopicMap::getTopic).orElse(null);
     }
 
     @Override

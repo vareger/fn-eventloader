@@ -11,7 +11,6 @@ spring:
     client-id: ${CLIENT_ID}
 event-loader:
   topics:
-    blocks: ${TOPIC_BLOCK}
     events:
       - event: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
         topic: ${TOPIC_TRANSFER}
@@ -19,6 +18,9 @@ event-loader:
       - event: '*'
         topic: ${TOPIC_ALL}
         name: "All"
+      - event: 'block'
+        topic: ${TOPIC_BLOCK}
+        name: 'Blocks'
 ethereum:
   client-address: ${NODE_URL}
   batch-size: ${BLOCK_BATCH_SIZE:10}
