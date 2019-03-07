@@ -225,7 +225,8 @@ public class EventLoader {
             }
 
             this.metrics.setCurrentBlockNumber(events.getEndBlock());
-            this.metrics.addProcessedEventsCount(blocks > 0 ? blocks : 0);
+            this.metrics.addProcessedEventsCount((long)logs.size());
+            this.metrics.addProcessedBlocksCount(blocks > 0 ? blocks : 0);
             this.metrics.setLatestBlockNumber(latestBlock);
             long queueSize = latestBlock - Math.max(lastProcessed, events.getEndBlock());
             stats.queueSize = queueSize > 0 ? queueSize : 0;

@@ -18,6 +18,7 @@ public class EventMetrics {
     private static final String BLOCK_NUMBER_TAG = "tag";
     private static final String TYPE = "service";
     private static final String EVENT_PROCESSED = "events_processed";
+    private static final String BLOCK_PROCESSED = "blocks_processed";
     private static final String MESSAGE = "message_published_topic";
     private static final String PROCESS_TIME = "events_fetch_time";
     public static final String EVENT_LOADER = "event_loader";
@@ -25,6 +26,7 @@ public class EventMetrics {
     private Long currentBlockNumber;
     private Long latestBlockNumber;
     private Counter eventProcessed;
+    private Counter blockProcessed;
     private Timer processTime;
     private Map<String, Counter> topicCounters;
 
@@ -34,6 +36,7 @@ public class EventMetrics {
         Gauge.builder(BLOCK_NUMBER, this::getLatestBlockNumber).tag(BLOCK_NUMBER_TAG, "latest").tag(TYPE, EVENT_LOADER).register(registry);
         Gauge.builder(BLOCK_NUMBER, this::getLag).tag(BLOCK_NUMBER_TAG, "lag").tag(TYPE, EVENT_LOADER).register(registry);
         this.eventProcessed = Counter.builder(EVENT_PROCESSED).tag(TYPE, EVENT_LOADER).register(registry);
+        this.blockProcessed = Counter.builder(BLOCK_PROCESSED).tag(TYPE, EVENT_LOADER).register(registry);
         this.processTime = Timer.builder(PROCESS_TIME).tag(TYPE, EVENT_LOADER).publishPercentileHistogram().register(registry);
         topicCounters = new HashMap<>(topics.getEvents().size());
         topics.getEvents().forEach(topic -> {
@@ -62,6 +65,10 @@ public class EventMetrics {
 
     public void addProcessedEventsCount(Long eventsCount) {
         this.eventProcessed.increment(eventsCount.doubleValue());
+    }
+
+    public void addProcessedBlocksCount(Long blocksCount) {
+        this.blockProcessed.increment(blocksCount.doubleValue());
     }
 
     public void addPublishedMessage(String topic) {
