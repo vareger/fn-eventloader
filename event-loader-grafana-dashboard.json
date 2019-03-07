@@ -90,7 +90,7 @@
           "value": "null"
         }
       ],
-      "valueName": "avg"
+      "valueName": "total"
     },
     {
       "cacheTimeout": null,
@@ -170,7 +170,7 @@
           "value": "null"
         }
       ],
-      "valueName": "current"
+      "valueName": "total"
     },
     {
       "columns": [],
@@ -766,7 +766,7 @@
         "name": null,
         "show": true,
         "values": [
-          "current"
+          "total"
         ]
       },
       "yaxes": [
@@ -833,5 +833,5 @@
   "timezone": "",
   "title": "Event-Loader",
   "uid": "8yIT5hjmk",
-  "version": 9
+  "version": 12
 }
