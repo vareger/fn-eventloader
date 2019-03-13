@@ -95,7 +95,7 @@ spec:
     spec:
       containers:
       - name: eventloader-service
-        image: vareger/event-loader:1.0.8
+        image: vareger/event-loader:1.0.9
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
