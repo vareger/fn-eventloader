@@ -5,6 +5,11 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Metrics collector of blockchain state
+ *
+ * @author Maxim Fischuk
+ */
 @Service
 public class BlockchainMetrics {
 
@@ -24,10 +29,20 @@ public class BlockchainMetrics {
         Gauge.builder(SYNC, this::isSyncFalse).tag(SYNC_STATUS, "synced").register(registry);
     }
 
+    /**
+     * Set current number of block on Ethereum Node
+     *
+     * @param blockNumber Number of block
+     */
     public void setBlockNumber(Long blockNumber) {
         this.blockNumber = blockNumber;
     }
 
+    /**
+     * Set current synchronization state of Ethereum Node
+     *
+     * @param isSync true if node is currently syncing
+     */
     public void setSyncStatus(boolean isSync) {
         this.inSync = isSync;
     }

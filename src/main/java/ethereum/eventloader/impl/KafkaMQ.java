@@ -11,15 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import org.springframework.util.concurrent.FailureCallback;
-import org.springframework.util.concurrent.SuccessCallback;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthLog;
 
 import java.util.List;
 
+/**
+ * Kafka implementation of Message Broker Publisher
+ *
+ * @see ethereum.eventloader.MessageBrokerAdapter
+ * @author Maxim Fischuk
+ */
 @Component
-public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult<String, EventMessage>>, FailureCallback {
+public class KafkaMQ implements MessageBrokerAdapter {
     private static final Logger log = LoggerFactory.getLogger(KafkaMQ.class);
 
     private final KafkaTemplate<String, EventMessage> kafkaTemplate;
@@ -36,6 +40,11 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
         this.metrics = metrics;
     }
 
+    /**
+     * Publish logs to specific topics
+     *
+     * @param logs List of logs loaded from transaction
+     */
     @Override
     public void publish(List<EthLog.LogResult> logs) {
         if (logs.isEmpty()) {
@@ -55,6 +64,11 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
         log.info("Sent {} messages in {} ms.", logs.size(), tookMs);
     }
 
+    /**
+     * Publish block information to specific topic
+     *
+     * @param block Ethereum block response
+     */
     @Override
     public void publishBlock(EthBlock.Block block) {
         if (topics.getBlocks() == null) {
@@ -66,13 +80,7 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
                 topics.getBlocks(),
                 block.getHash(),
                 new BlockMessage(block.getNumber(), block.getHash())
-        ).addCallback(
-                message -> {
-                    log.debug("Published block {} to {}", message.getProducerRecord().key(), message.getRecordMetadata().topic());
-                    this.metrics.addPublishedMessage(message.getProducerRecord().topic());
-                },
-                this
-        );
+        ).addCallback(this::onBlockSuccess, this::onFailure);
     }
 
     private void sendEvent(EventMessage eventMessage) {
@@ -81,7 +89,7 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
                 .filter(eventTopicMap -> eventTopicMap.equalsEvent(eventMessage))
                 .forEach(eventTopicMap ->
                         this.kafkaTemplate.send(eventTopicMap.getTopic(), eventMessage.getTopics().get(0), eventMessage)
-                                .addCallback(this, this)
+                                .addCallback(this::onEventSuccess, this::onFailure)
                 );
     }
 
@@ -90,15 +98,18 @@ public class KafkaMQ implements MessageBrokerAdapter, SuccessCallback<SendResult
         log.debug("Method \"reconnect\" doesn't uses.");
     }
 
-    @Override
-    public void onFailure(Throwable throwable) {
+    private void onFailure(Throwable throwable) {
         log.error("Error sending message", throwable);
     }
 
-    @Override
-    public void onSuccess(SendResult<String, EventMessage> eventMessageSendResult) {
+    private void onEventSuccess(SendResult<String, EventMessage> eventMessageSendResult) {
         EventMessage eventMessage = eventMessageSendResult.getProducerRecord().value();
         this.metrics.addPublishedMessage(eventMessageSendResult.getProducerRecord().topic());
         log.debug("Published {} event topic to {}", eventMessage.getTopics().get(0), eventMessageSendResult.getProducerRecord().topic());
+    }
+
+    private void onBlockSuccess(SendResult<String, BlockMessage> blockMessageSendResult) {
+        log.debug("Published block {} to {}", blockMessageSendResult.getProducerRecord().key(), blockMessageSendResult.getRecordMetadata().topic());
+        this.metrics.addPublishedMessage(blockMessageSendResult.getProducerRecord().topic());
     }
 }

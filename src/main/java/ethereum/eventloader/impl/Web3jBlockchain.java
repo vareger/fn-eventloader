@@ -25,6 +25,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+/**
+ * Web3J implementation for Ethereum Blockchain
+ *
+ * @see ethereum.eventloader.BlockchainAdapter
+ */
 @Component
 public class Web3jBlockchain implements BlockchainAdapter {
     private static final Logger log = LoggerFactory.getLogger(Web3jBlockchain.class);

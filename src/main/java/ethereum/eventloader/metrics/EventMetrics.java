@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+/**
+ * Metrics collector of events loading state
+ *
+ * @author Maxim Fischuk
+ */
 @Service
 public class EventMetrics {
     private static final String BLOCK_NUMBER = "block_number";
@@ -21,7 +26,7 @@ public class EventMetrics {
     private static final String BLOCK_PROCESSED = "blocks_processed";
     private static final String MESSAGE = "message_published_topic";
     private static final String PROCESS_TIME = "events_fetch_time";
-    public static final String EVENT_LOADER = "event_loader";
+    private static final String EVENT_LOADER = "event_loader";
 
     private Long currentBlockNumber;
     private Long latestBlockNumber;
@@ -55,26 +60,59 @@ public class EventMetrics {
         topicCounters.put(topics.getBlocks(), counter);
     }
 
+    /**
+     * Set current number of processed block
+     *
+     * @param currentBlock Number of block
+     */
     public void setCurrentBlockNumber(Long currentBlock) {
         this.currentBlockNumber = currentBlock;
     }
 
+    /**
+     * Set latest seen number of block
+     *
+     * @param latestBlockNumber Number of block
+     */
     public void setLatestBlockNumber(Long latestBlockNumber) {
         this.latestBlockNumber = latestBlockNumber;
     }
 
+    /**
+     * Add events count processed during iteration
+     *
+     * @param eventsCount Count of events
+     */
     public void addProcessedEventsCount(Long eventsCount) {
         this.eventProcessed.increment(eventsCount.doubleValue());
     }
 
+    /**
+     * Add blocks count processed during iteration
+     *
+     * @param blocksCount Count of blocks
+     */
     public void addProcessedBlocksCount(Long blocksCount) {
         this.blockProcessed.increment(blocksCount.doubleValue());
     }
 
+    /**
+     * Increment count of published messages to topic
+     *
+     * @param topic Topic name
+     */
     public void addPublishedMessage(String topic) {
         this.topicCounters.get(topic).increment();
     }
 
+    /**
+     *  Execute function and measure the execution time
+     *
+     * @param callable Function to execute and measure the execution time
+     * @param <T> The return type of the {@link Callable}
+     * @return Result of execution {@code callable}
+     * @throws Exception Any exception bubbling up from the callable
+     */
     public <T> T recordExecutionTime(Callable<T> callable) throws Exception {
         return this.processTime.recordCallable(callable);
     }
