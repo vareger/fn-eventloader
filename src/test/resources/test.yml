@@ -1,6 +1,6 @@
 spring:
   kafka:
-    bootstrap-servers: 'localhost:9092'
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
     producer:
       value-serializer: 'org.springframework.kafka.support.serializer.JsonSerializer'
       retries: 5
@@ -19,9 +19,4 @@ ethereum:
   client-address: wss://rinkeby.infura.io/ws
   batch-size: 10
   start-block: 3486795
-  block-lag:
-zookeeper:
-  namespace: 'event-loader-test'
-  connect-string: 'localhost:2181'
-  connection-timeout: 3000
-  session-timeout: 10000
+  block-lag: 1
