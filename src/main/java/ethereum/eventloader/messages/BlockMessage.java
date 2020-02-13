@@ -41,6 +41,14 @@ public class BlockMessage {
         this.hash = hash;
     }
 
+    public EthBlock.Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(EthBlock.Block block) {
+        this.block = block;
+    }
+
     @Override
     public String toString() {
         return "BlockMessage{" +

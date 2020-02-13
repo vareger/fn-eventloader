@@ -82,7 +82,7 @@ public class KafkaMQ implements MessageBrokerAdapter {
         if (topics.getBlocksFull() != null) {
             log.debug("Sending block {}", block.getNumber().toString());
             this.kafkaBlockTemplate.send(
-                    topics.getBlocks(),
+                    topics.getBlocksFull(),
                     block.getHash(),
                     new BlockMessage(block.getNumber(), block.getHash(), block)
             ).addCallback(this::onBlockSuccess, this::onFailure);

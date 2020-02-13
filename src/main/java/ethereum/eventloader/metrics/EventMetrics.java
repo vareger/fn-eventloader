@@ -56,12 +56,6 @@ public class EventMetrics {
                     .register(registry);
             topicCounters.put(topic.getTopic(), counter);
         });
-        Counter counter = Counter.builder(MESSAGE)
-                .tag("topic", topics.getBlocks())
-                .tag("event", "")
-                .tag("name", "Blocks")
-                .register(registry);
-        topicCounters.put(topics.getBlocks(), counter);
     }
 
     /**
