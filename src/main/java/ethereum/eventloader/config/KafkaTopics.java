@@ -35,6 +35,11 @@ public class KafkaTopics {
                 .findAny().map(EventTopicMap::getTopic).orElse(null);
     }
 
+    public String getBlocksFull() {
+        return getEvents().stream().filter(event -> event.getEvent().equals("block-full"))
+                .findAny().map(EventTopicMap::getTopic).orElse(null);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

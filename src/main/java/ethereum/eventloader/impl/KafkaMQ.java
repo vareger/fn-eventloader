@@ -71,16 +71,22 @@ public class KafkaMQ implements MessageBrokerAdapter {
      */
     @Override
     public void publishBlock(EthBlock.Block block) {
-        if (topics.getBlocks() == null) {
-            log.warn("Topic for block messages does not present, ignore sending!");
-            return;
+        if (topics.getBlocks() != null) {
+            log.debug("Sending block {}", block.getNumber().toString());
+            this.kafkaBlockTemplate.send(
+                    topics.getBlocks(),
+                    block.getHash(),
+                    new BlockMessage(block.getNumber(), block.getHash())
+            ).addCallback(this::onBlockSuccess, this::onFailure);
         }
-        log.debug("Sending block {}", block.getNumber().toString());
-        this.kafkaBlockTemplate.send(
-                topics.getBlocks(),
-                block.getHash(),
-                new BlockMessage(block.getNumber(), block.getHash())
-        ).addCallback(this::onBlockSuccess, this::onFailure);
+        if (topics.getBlocksFull() != null) {
+            log.debug("Sending block {}", block.getNumber().toString());
+            this.kafkaBlockTemplate.send(
+                    topics.getBlocks(),
+                    block.getHash(),
+                    new BlockMessage(block.getNumber(), block.getHash(), block)
+            ).addCallback(this::onBlockSuccess, this::onFailure);
+        }
     }
 
     private void sendEvent(EventMessage eventMessage) {

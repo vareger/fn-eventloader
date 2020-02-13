@@ -97,7 +97,7 @@ public class Web3jBlockchain implements BlockchainAdapter {
         return ParallelFlowable.from(
                 Flowable.rangeLong(startBlock, endBlock - startBlock)
                         .map(DefaultBlockParameterNumber::new)
-                        .map(block -> w3.ethGetBlockByNumber(block, false).send())
+                        .map(block -> w3.ethGetBlockByNumber(block, config.isFullTransactionObject()).send())
                         .map(EthBlock::getBlock)
         );
     }

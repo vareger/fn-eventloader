@@ -19,6 +19,7 @@ public class Web3jConfig {
     private Long batchSize = 10L;
     private Long blockLag = 12L;
     private BigInteger startBlock;
+    private boolean fullTransactionObject = false;
 
     public String getClientAddress() {
         return clientAddress;
@@ -74,5 +75,13 @@ public class Web3jConfig {
 
     public void setBlockLag(Long blockLag) {
         this.blockLag = blockLag;
+    }
+
+    public boolean isFullTransactionObject() {
+        return fullTransactionObject;
+    }
+
+    public void setFullTransactionObject(boolean fullTransactionObject) {
+        this.fullTransactionObject = fullTransactionObject;
     }
 }
