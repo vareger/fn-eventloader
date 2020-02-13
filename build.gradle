@@ -20,7 +20,7 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 apply plugin: 'com.bmuschko.docker-spring-boot-application'
 
 group = 'ethereum'
-version = '1.0.9'
+version = '1.0.10'
 
 description = """"""
 
