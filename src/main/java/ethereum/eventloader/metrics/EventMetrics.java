@@ -37,6 +37,10 @@ public class EventMetrics {
 
     @Autowired
     public EventMetrics(MeterRegistry registry, KafkaTopics topics) {
+
+        this.currentBlockNumber = 0L;
+        this.latestBlockNumber = 0L;
+
         Gauge.builder(BLOCK_NUMBER, this::getCurrentBlockNumber).tag(BLOCK_NUMBER_TAG, "current").tag(TYPE, EVENT_LOADER).register(registry);
         Gauge.builder(BLOCK_NUMBER, this::getLatestBlockNumber).tag(BLOCK_NUMBER_TAG, "latest").tag(TYPE, EVENT_LOADER).register(registry);
         Gauge.builder(BLOCK_NUMBER, this::getLag).tag(BLOCK_NUMBER_TAG, "lag").tag(TYPE, EVENT_LOADER).register(registry);
