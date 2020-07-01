@@ -1,10 +1,10 @@
-package ethereum.eventloader.beans;
+package ethereum.eventloader.component.beans;
 
 import ethereum.eventloader.config.Web3jConfig;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.Web3jService;
@@ -16,20 +16,16 @@ import org.web3j.protocol.websocket.WebSocketService;
 import java.net.ConnectException;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class Web3jBeans {
-
-    private static final Logger log = LoggerFactory.getLogger(Web3jBeans.class);
 
     private final Web3jConfig config;
 
-    @Autowired
-    public Web3jBeans(Web3jConfig config) {
-        this.config = config;
-    }
-
+    @Bean
     public Web3j web3j() {
-        log.info("Building service for endpoint: " + config.getClientAddress());
+        log.info("[WEB3J] building service for endpoint: " + config.getClientAddress());
         Web3jService web3jService = buildService(config.getClientAddress());
         return Web3j.build(web3jService);
     }
@@ -45,8 +41,8 @@ public class Web3jBeans {
             web3jService = new WebSocketService(clientAddress, false);
             try {
                 ((WebSocketService) web3jService).connect();
-            } catch (ConnectException e) {
-                log.error("Cannot connect to web socket", e);
+            } catch (ConnectException ex) {
+                log.error("[WEB3J] cannot connect to web socket", ex);
             }
         } else if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             web3jService = new WindowsIpcService(clientAddress);

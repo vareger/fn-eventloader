@@ -1,15 +1,17 @@
 package ethereum.eventloader;
 
+import ethereum.eventloader.component.BlockchainAdapter;
+import ethereum.eventloader.component.entity.Events;
+import ethereum.eventloader.component.MessageBrokerAdapter;
 import ethereum.eventloader.metrics.EventMetrics;
 import io.micrometer.core.annotation.Timed;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.framework.recipes.locks.Locker;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,18 +24,20 @@ import java.util.concurrent.TimeUnit;
 /**
  * Loads Ethereum events into EMS topic
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class EventLoader {
-    private static final Logger log = LoggerFactory.getLogger(EventLoader.class);
 
     private static final String ZNODE_PROCESSED_BLOCK = "/processed_block";
 
+    private final EventMetrics metrics;
+
     private final BlockchainAdapter blockchain;
+
     private final MessageBrokerAdapter messageBroker;
 
     private final CuratorFramework curatorFramework;
-
-    private final EventMetrics metrics;
 
     /**
      * Milliseconds to sleep between event-load attempts
@@ -44,22 +48,14 @@ public class EventLoader {
     @Value("#{web3jConfig.startBlock}")
     private BigInteger startBlock;
 
-    @Autowired
-    public EventLoader(BlockchainAdapter blockchain, MessageBrokerAdapter messageBroker, CuratorFramework curatorFramework, EventMetrics metrics) {
-        this.blockchain = blockchain;
-        this.messageBroker = messageBroker;
-        this.curatorFramework = curatorFramework;
-        this.metrics = metrics;
-    }
-
     @Timed(longTask = true, value = "loading_time")
     @Scheduled(fixedDelay = 100L)
     public void update() {
         boolean atLatestBlock = false;
         try {
             atLatestBlock = this.metrics.recordExecutionTime(this::eventLoadAttempt);
-        } catch (Exception e) {
-            log.error("Event load failed, will retry", e);
+        } catch (Exception ex) {
+            log.error("[SERVICE] event load failed, will retry", ex);
             sleep(sleepIntervalMs);
         }
 
@@ -74,7 +70,7 @@ public class EventLoader {
         try {
             Thread.sleep(interval);
         } catch (InterruptedException ex) {
-            log.error("Sleep error", ex);
+            log.error("[SERVICE] sleep error", ex);
         }
     }
 
@@ -104,7 +100,7 @@ public class EventLoader {
             long latestBlock = blockchain.latestBlockNumber();
             long lastProcessed = lastBlock.get().preValue();
             if (startBlock.longValue() > lastProcessed) {
-                log.info("Last processed is least of start block, updated: {} ==> {}", lastProcessed, startBlock.toString());
+                log.info("[SERVICE] last processed is least of start block, updated: {} ==> {}", lastProcessed, startBlock.toString());
                 lastProcessed = startBlock.longValue();
             }
             Events events;
@@ -113,22 +109,23 @@ public class EventLoader {
             } else if (lastProcessed > latestBlock) {
                 long lag = lastProcessed - latestBlock;
                 if (lag > 50) {
-                    log.warn("Lag detected. Node is on block {} while latest processed is {}. Lag: {}", latestBlock, lastProcessed, lag);
+                    log.warn("[SERVICE] lag detected. Node is on block {} while latest processed is {}. Lag: {}", latestBlock, lastProcessed, lag);
                 } else {
-                    log.info("Node is on block {} while latest processed is {}. Lag: {}", latestBlock, lastProcessed, lag);
+                    log.info("[SERVICE] node is on block {} while latest processed is {}. Lag: {}", latestBlock, lastProcessed, lag);
                 }
                 waitForNodeToCatchup(lag);
                 return true;
             } else {
-                log.info("At latest block: {}", latestBlock);
+                log.info("[SERVICE] at latest block: {}", latestBlock);
                 return true;
             }
 
             long blocks = events.getEndBlock() - lastProcessed;
             List<LogResult> logs = events.getLogs(lastProcessed);
-            blockchain.loadBlocks(lastProcessed, events.getEndBlock()).sequential().subscribe(messageBroker::publishBlock).dispose();
+            blockchain.loadBlocks(lastProcessed, events.getEndBlock())
+                    .forEach(messageBroker::publishBlock);
             if (logs.isEmpty()) {
-                log.info("All events published in parallel");
+                log.info("[SERVICE] all events published");
             } else {
                 messageBroker.publish(logs);
             }
@@ -139,7 +136,7 @@ public class EventLoader {
 
             if (latestBlock > events.getEndBlock()) {
                 //we process limited number of blocks at once
-                log.info("Blocks to process: {}", latestBlock - events.getEndBlock());
+                log.info("[SERVICE] blocks to process: {}", latestBlock - events.getEndBlock());
                 atLatestBlock = false;
             }
 
@@ -147,18 +144,18 @@ public class EventLoader {
             this.metrics.addProcessedEventsCount((long)logs.size());
             this.metrics.addProcessedBlocksCount(blocks > 0 ? blocks : 0);
             this.metrics.setLatestBlockNumber(latestBlock);
-        } catch (Exception e) {
-            log.error("Loader error", e);
+        } catch (Exception ex) {
+            log.error("[SERVICE] loader error", ex);
         }
         return atLatestBlock;
     }
 
     private static void waitForNodeToCatchup(long gap) {
         if (gap > 1000) {
-            log.info("Sleeping for 60 sec...");
-            sleep(60000); //node is syncing so lets give it some time to catchup
+            log.info("[SERVICE] sleeping for 60 sec...");
+            sleep(60000); // node is syncing so lets give it some time to catchup
         } else if (gap > 100) {
-            log.info("Sleeping for 30 sec...");
+            log.info("[SERVICE] sleeping for 30 sec...");
             sleep(30000);
         }
     }

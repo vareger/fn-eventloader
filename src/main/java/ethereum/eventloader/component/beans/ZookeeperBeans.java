@@ -1,22 +1,18 @@
-package ethereum.eventloader.beans;
+package ethereum.eventloader.component.beans;
 
 import ethereum.eventloader.config.ZookeeperProperties;
+import lombok.RequiredArgsConstructor;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ZookeeperBeans {
 
     private final ZookeeperProperties properties;
-
-    @Autowired
-    public ZookeeperBeans(ZookeeperProperties properties) {
-        this.properties = properties;
-    }
 
     @Bean
     public CuratorFramework initCuratorFramework() {

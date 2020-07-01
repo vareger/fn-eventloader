@@ -1,8 +1,10 @@
-package ethereum.eventloader;
+package ethereum.eventloader.component;
 
-import io.reactivex.parallel.ParallelFlowable;
+import ethereum.eventloader.component.entity.Events;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthSyncing;
+
+import java.util.List;
 
 public interface BlockchainAdapter {
 
@@ -26,9 +28,9 @@ public interface BlockchainAdapter {
 	 * Load blocks in range [startBlock -> endBlock), must be startBlock > endBlock
 	 * @param startBlock Start block number
 	 * @param endBlock End block number
-	 * @return List of blocks {@link io.reactivex.Flowable}
+	 * @return List of blocks {@link EthBlock.Block}
 	 */
-	ParallelFlowable<EthBlock.Block> loadBlocks(long startBlock, long endBlock);
+	List<EthBlock.Block> loadBlocks(long startBlock, long endBlock);
 
 	/**
 	 * Get syncing state of the Ethereum Blockchain Node

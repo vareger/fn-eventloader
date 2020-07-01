@@ -1,13 +1,11 @@
-package ethereum.eventloader.impl;
+package ethereum.eventloader.component;
 
-import ethereum.eventloader.MessageBrokerAdapter;
 import ethereum.eventloader.config.KafkaTopics;
 import ethereum.eventloader.messages.BlockMessage;
 import ethereum.eventloader.messages.EventMessage;
 import ethereum.eventloader.metrics.EventMetrics;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -19,26 +17,21 @@ import java.util.List;
 /**
  * Kafka implementation of Message Broker Publisher
  *
- * @see ethereum.eventloader.MessageBrokerAdapter
+ * @see MessageBrokerAdapter
  * @author Maxim Fischuk
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class KafkaMQ implements MessageBrokerAdapter {
-    private static final Logger log = LoggerFactory.getLogger(KafkaMQ.class);
-
-    private final KafkaTemplate<String, EventMessage> kafkaTemplate;
-    private final KafkaTemplate<String, BlockMessage> kafkaBlockTemplate;
-    private final EventMetrics metrics;
 
     private final KafkaTopics topics;
 
-    @Autowired
-    public KafkaMQ(KafkaTemplate<String, EventMessage> kafkaTemplate, KafkaTemplate<String, BlockMessage> kafkaBlockTemplate, KafkaTopics topics, EventMetrics metrics) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.kafkaBlockTemplate = kafkaBlockTemplate;
-        this.topics = topics;
-        this.metrics = metrics;
-    }
+    private final EventMetrics metrics;
+
+    private final KafkaTemplate<String, EventMessage> kafkaTemplate;
+
+    private final KafkaTemplate<String, BlockMessage> kafkaBlockTemplate;
 
     /**
      * Publish logs to specific topics
@@ -48,20 +41,20 @@ public class KafkaMQ implements MessageBrokerAdapter {
     @Override
     public void publish(List<EthLog.LogResult> logs) {
         if (logs.isEmpty()) {
-            log.warn("Logs is empty, ignore sending!");
+            log.warn("[KAFKA] logs is empty, ignore sending!");
             return;
         }
         final long start = System.currentTimeMillis();
-        log.info("Sending {} events", logs.size());
+        log.info("[KAFKA] sending {} events", logs.size());
         logs.stream()
                 .map(logResult -> (EthLog.LogObject) logResult)
                 .map(EventMessage::new)
                 .filter(logMessage -> !logMessage.getTopics().isEmpty())
-                .peek(logMessage -> log.debug("Sending event topic {}", logMessage.getTopics().get(0)))
+                .peek(logMessage -> log.debug("[KAFKA] sending event topic {}", logMessage.getTopics().get(0)))
                 .forEach(this::sendEvent);
 
         long tookMs = System.currentTimeMillis() - start;
-        log.info("Sent {} messages in {} ms.", logs.size(), tookMs);
+        log.info("[KAFKA] sent {} messages in {} ms.", logs.size(), tookMs);
     }
 
     /**
@@ -72,7 +65,7 @@ public class KafkaMQ implements MessageBrokerAdapter {
     @Override
     public void publishBlock(EthBlock.Block block) {
         if (topics.getBlocks() != null) {
-            log.debug("Sending block {}", block.getNumber().toString());
+            log.debug("[KAFKA] sending block {}", block.getNumber().toString());
             this.kafkaBlockTemplate.send(
                     topics.getBlocks(),
                     block.getHash(),
@@ -80,7 +73,7 @@ public class KafkaMQ implements MessageBrokerAdapter {
             ).addCallback(this::onBlockSuccess, this::onFailure);
         }
         if (topics.getBlocksFull() != null) {
-            log.debug("Sending block {}", block.getNumber().toString());
+            log.debug("[KAFKA] sending block {}", block.getNumber().toString());
             this.kafkaBlockTemplate.send(
                     topics.getBlocksFull(),
                     block.getHash(),
@@ -101,21 +94,21 @@ public class KafkaMQ implements MessageBrokerAdapter {
 
     @Override
     public void reconnect() {
-        log.debug("Method \"reconnect\" doesn't uses.");
+        log.debug("[KAFKA] method \"reconnect\" doesn't uses.");
     }
 
     private void onFailure(Throwable throwable) {
-        log.error("Error sending message", throwable);
+        log.error("[KAFKA] error sending message", throwable);
     }
 
     private void onEventSuccess(SendResult<String, EventMessage> eventMessageSendResult) {
         EventMessage eventMessage = eventMessageSendResult.getProducerRecord().value();
         this.metrics.addPublishedMessage(eventMessageSendResult.getProducerRecord().topic());
-        log.debug("Published {} event topic to {}", eventMessage.getTopics().get(0), eventMessageSendResult.getProducerRecord().topic());
+        log.debug("[KAFKA] published {} event topic to {}", eventMessage.getTopics().get(0), eventMessageSendResult.getProducerRecord().topic());
     }
 
     private void onBlockSuccess(SendResult<String, BlockMessage> blockMessageSendResult) {
-        log.debug("Published block {} to {}", blockMessageSendResult.getProducerRecord().key(), blockMessageSendResult.getRecordMetadata().topic());
+        log.debug("[KAFKA] published block {} to {}", blockMessageSendResult.getProducerRecord().key(), blockMessageSendResult.getRecordMetadata().topic());
         this.metrics.addPublishedMessage(blockMessageSendResult.getProducerRecord().topic());
     }
 }

@@ -2,20 +2,21 @@ package ethereum.eventloader;
 
 import java.util.List;
 
-import ethereum.eventloader.impl.KafkaMQ;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ethereum.eventloader.component.entity.Events;
+import ethereum.eventloader.component.KafkaMQ;
+import ethereum.eventloader.component.MessageBrokerAdapter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.support.ResourcePropertySource;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
-import ethereum.eventloader.impl.Web3jBlockchain;
+import ethereum.eventloader.component.Web3jBlockchain;
 
 /**
  * Special utility to load range of blocks manually.
  */
+@Slf4j
 public class ManualBlockLoader {
-	private static final Logger log = LoggerFactory.getLogger(ManualBlockLoader.class);
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws Exception {
@@ -29,7 +30,7 @@ public class ManualBlockLoader {
 		
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		ctx.scan("ethereum.eventloader.impl");
-		ctx.getEnvironment().getPropertySources().addFirst(new ResourcePropertySource("/application.properties"));
+		ctx.getEnvironment().getPropertySources().addFirst(new ResourcePropertySource("/application.yaml"));
 		ctx.refresh();
 		ctx.start();
 		

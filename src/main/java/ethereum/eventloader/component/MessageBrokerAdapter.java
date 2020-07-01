@@ -1,4 +1,4 @@
-package ethereum.eventloader;
+package ethereum.eventloader.component;
 
 import java.util.List;
 

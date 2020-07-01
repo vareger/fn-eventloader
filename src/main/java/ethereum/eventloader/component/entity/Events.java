@@ -1,4 +1,4 @@
-package ethereum.eventloader;
+package ethereum.eventloader.component.entity;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -6,13 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.web3j.protocol.core.methods.response.EthLog.LogResult;
 
+@Slf4j
 @SuppressWarnings("rawtypes")
 public class Events {
-	private static final Logger log = LoggerFactory.getLogger(Events.class);
 	
 	private final long startBlock;
 	private final long endBlock;
@@ -49,7 +48,7 @@ public class Events {
 			}
 		}
 		if (skipped > 0) {
-			log.info("Skipped {} events (processed in parallel)", skipped);
+			log.info("[EVENTS] skipped {} events", skipped);
 		}
 		return all;
 	}
