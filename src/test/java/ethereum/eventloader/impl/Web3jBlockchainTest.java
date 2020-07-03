@@ -1,7 +1,7 @@
 package ethereum.eventloader.impl;
 
-import ethereum.eventloader.BlockchainAdapter;
-import ethereum.eventloader.Events;
+import ethereum.eventloader.component.BlockchainAdapter;
+import ethereum.eventloader.component.entity.Events;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

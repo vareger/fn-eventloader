@@ -1,6 +1,6 @@
 package ethereum.eventloader.impl;
 
-import ethereum.eventloader.beans.Web3jBeans;
+import ethereum.eventloader.component.beans.Web3jBeans;
 import ethereum.eventloader.config.Web3jConfig;
 import ethereum.eventloader.messages.BlockMessage;
 import ethereum.eventloader.messages.EventMessage;
